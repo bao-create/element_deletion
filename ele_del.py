@@ -5,7 +5,7 @@ num_layers = 10
 layer_thickness = .01
 build_axis = 2 #1,2,3 -> x,y,z
 tol = .0001 #tolerance of element existing on the layer transition
-
+porosity = .02
 
 
 
@@ -31,19 +31,28 @@ for eid in model.elements: #iterate through elements
     cen_matrix[i,:] = centr_eid #append to master centroid list
     i += 1 
 
-good_y_vals = np.arange(layer_thickness,num_layers * layer_thickness,layer_thickness) #find all of the values of the layer interfaces
-good_elements = np.empty([])
-for cen in cen_matrix:
+layer_vals = np.arange(layer_thickness,num_layers * layer_thickness,layer_thickness) #find all of the values of the layer interfaces
+layer_elements = []
+
+
+for cen in cen_matrix: 
     good_ele_flag = False
     dim = 0
     for ax in cen:
        dim += 1
        if dim == build_axis:
-           current_cent_check = np.where(np.logical_and(good_y_vals<=(ax*(1+tol)),good_y_vals > (ax*(1-tol))) #checks if current build axis value in the current 
+           current_centroid_check = np.where(np.logical_and(layer_vals<=(ax*(1+tol)),layer_vals > (ax*(1-tol))) #checks if current build axis value, in the current 
            #centroid is in the tolerance of the layer tranisiton. outputs tuple type
-           if current_cent_check[0].size !=0: #checks to see if the value was in the range 
+           if current_centroid_check[0].size != 0: #checks to see if the value was in the range specifed by layer_vals
                good_ele_flag = True
         elif dim == 4 and good_ele_flag:
-            good_elements = np.stack((good_elements,ax))
-            
+            layer_elements.append(ax[4])
+
            
+number_to_delete = round(len(model.elements)*porosity)
+
+eles_to_delete = np.random.Generator.choice(layer_elements,number_to_delete,replace=False)
+
+for i in eles_to_delete:
+    del model.elements(eles_to_delete[i])
+    
