@@ -1,3 +1,4 @@
+from numpy.lib.function_base import append
 from pyNastran.bdf.bdf import BDF
 import numpy as np
 
@@ -55,4 +56,3 @@ eles_to_delete = np.random.Generator.choice(layer_elements,number_to_delete,repl
 
 for i in eles_to_delete:
     del model.elements(eles_to_delete[i])
-    
